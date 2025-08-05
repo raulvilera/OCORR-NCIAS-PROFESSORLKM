@@ -1447,7 +1447,7 @@
                 showLoading();
                 
                 // Buscar alunos reais da planilha
-                const url = `${SCRIPT_BASE_URL}?action=getStudents&class=${encodeURIComponent(selectedClass)}&spreadsheetId=${SPREADSHEET_ID}`;
+                const url = `${"https://script.google.com/macros/s/AKfycbzKv7h9y9Ie9bQ8lQlF1XbMxG2K2QqyL8ZQ0TgZ4QjHj5v9yGJc/exec"}?action=getStudents&class=${encodeURIComponent(selectedClass)}&spreadsheetId=${SPREADSHEET_ID}`;
                 
                 safeFetch(url)
                     .then(data => {
@@ -1496,7 +1496,7 @@
                     showLoading();
                     
                     // Buscar estatísticas do aluno
-                    const url = `${SCRIPT_BASE_URL}?action=getStudentStats&student=${encodeURIComponent(this.value)}&spreadsheetId=${SPREADSHEET_ID}`;
+                    const url = `${"https://script.google.com/macros/s/AKfycbzKv7h9y9Ie9bQ8lQlF1XbMxG2K2QqyL8ZQ0TgZ4QjHj5v9yGJc/exec"}?action=getStudentStats&student=${encodeURIComponent(this.value)}&spreadsheetId=${SPREADSHEET_ID}`;
                     
                     safeFetch(url)
                         .then(data => {
@@ -1619,7 +1619,7 @@
                     };
 
                     // Enviar dados para o Google Sheets
-                    const response = await safeFetch(SCRIPT_BASE_URL, {
+                    const response = await safeFetch("https://script.google.com/macros/s/AKfycbzKv7h9y9Ie9bQ8lQlF1XbMxG2K2QqyL8ZQ0TgZ4QjHj5v9yGJc/exec", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -1735,7 +1735,7 @@
             async function loadStudentPeriodStats() {
                 showLoading();
                 try {
-                    const url = `${SCRIPT_BASE_URL}?action=getStudentPeriodStats&spreadsheetId=${SPREADSHEET_ID}&sheetName=BANCODEDADOSGERAL`;
+                    const url = `${"https://script.google.com/macros/s/AKfycbzKv7h9y9Ie9bQ8lQlF1XbMxG2K2QqyL8ZQ0TgZ4QjHj5v9yGJc/exec"}?action=getStudentPeriodStats&spreadsheetId=${SPREADSHEET_ID}&sheetName=BANCODEDADOSGERAL`;
                     const data = await safeFetch(url);
                     
                     if (data && data.status === "success") {
