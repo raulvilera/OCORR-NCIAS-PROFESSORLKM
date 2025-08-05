@@ -367,7 +367,6 @@
         }
         
         .chart-container {
-            position: relative;
             width: 50px;
             height: 50px;
             margin-right: 15px;
@@ -724,6 +723,97 @@
         .period-tarde { color: #e67e22; }
         .period-noite { color: #9b59b6; }
         
+        .class-total-card {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            margin-top: 25px;
+            display: none;
+        }
+        
+        .class-total-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(to top, rgba(255,255,255,0.3), transparent);
+            z-index: 1;
+        }
+        
+        .class-total-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .class-total-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .class-total-count {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 10px 0;
+            text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+        
+        /* Novo card de alunos por turma */
+        .class-students-card {
+            background: linear-gradient(135deg, #3498db 0%, #1a73e8 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            margin-top: 25px;
+            display: none;
+        }
+        
+        .class-students-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(to top, rgba(255,255,255,0.3), transparent);
+            z-index: 1;
+        }
+        
+        .class-students-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .class-students-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .class-students-count {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 10px 0;
+            text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+        
         @media (max-width: 992px) {
             .dashboard {
                 grid-template-columns: 1fr;
@@ -1020,6 +1110,19 @@
                                 <div class="stat-value" id="totalOccurrences">0</div>
                                 <div class="stat-label">Ocorrências registradas</div>
                             </div>
+                            
+                            <!-- Novo card entre "Ocorrências registradas" e "Total de alunos" -->
+                            <div class="stat-item" id="classStudentsCard" style="display: none;">
+                                <div class="stat-value" id="classStudentsCount">0</div>
+                                <div class="stat-label">Alunos na turma</div>
+                                <div class="period-stats">
+                                    <div class="period-item">
+                                        <div class="period-value" id="selectedClassPeriod">-</div>
+                                        <div class="period-label">Período</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="stat-item">
                                 <div class="stat-value" id="totalStudents">0</div>
                                 <div class="stat-label">Total de alunos</div>
@@ -1208,6 +1311,9 @@
             const nightCountEl = document.getElementById('nightCount');
             const studentsPeriodChartCanvas = document.getElementById('studentsPeriodChart');
             const loadingOverlay = document.getElementById('loadingOverlay');
+            const classStudentsCard = document.getElementById('classStudentsCard');
+            const classStudentsCount = document.getElementById('classStudentsCount');
+            const selectedClassPeriod = document.getElementById('selectedClassPeriod');
 
             // URL base do Apps Script
             const SCRIPT_BASE_URL = "https://script.google.com/macros/s/AKfycbxc_P27Wl96tqKT9IDte8jvhX-v3zOxFvsDD-QgTAgcyZoV4gqKhRWTojhcE-Y2gzoj/exec";
@@ -1325,6 +1431,7 @@
                 studentSelect.innerHTML = '<option value="">Carregando alunos...</option>';
                 studentSelect.disabled = true;
                 studentOccurrencesCard.style.display = 'none';
+                classStudentsCard.style.display = 'none';
 
                 // Resetar gráficos
                 const chartCanvases = document.querySelectorAll('.donut-chart');
@@ -1353,6 +1460,17 @@
                                 studentSelect.appendChild(option);
                             });
                             studentSelect.disabled = false;
+                            
+                            // Atualizar o card com o total de alunos na turma
+                            classStudentsCount.textContent = data.students.length;
+                            
+                            // Determinar o período da turma
+                            const periodo = selectedClass.includes("MANHA") ? "Manhã" : 
+                                           selectedClass.includes("TARDE") ? "Tarde" : 
+                                           selectedClass.includes("NOITE") ? "Noite" : "Desconhecido";
+                            selectedClassPeriod.textContent = periodo;
+                            
+                            classStudentsCard.style.display = 'block';
                         } else {
                             const errorMsg = data?.message || 'Resposta inesperada do servidor';
                             studentSelect.innerHTML = `<option value="">Erro: ${errorMsg}</option>`;
@@ -1430,6 +1548,7 @@
                 successAlert.style.display = 'none';
                 errorAlert.style.display = 'none';
                 studentOccurrencesCard.style.display = 'none';
+                classStudentsCard.style.display = 'none';
                 classSelect.selectedIndex = 0;
 
                 // Resetar gráficos
@@ -1522,6 +1641,7 @@
                         studentSelect.disabled = true;
                         classSelect.selectedIndex = 0;
                         studentOccurrencesCard.style.display = 'none';
+                        classStudentsCard.style.display = 'none';
 
                         // Atualizar estatísticas gerais
                         const currentTotal = parseInt(totalOccurrencesEl.textContent);
@@ -1534,7 +1654,11 @@
                     }
                 } catch (error) {
                     console.error('Erro ao enviar ocorrência:', error);
-                    errorMessage.textContent = `Ocorreu um erro ao enviar a ocorrência: ${error.message}`;
+                    if (error.message.includes("Failed to fetch")) {
+                        errorMessage.textContent = "Falha na conexão. Verifique sua internet e tente novamente.";
+                    } else {
+                        errorMessage.textContent = `Ocorreu um erro ao enviar a ocorrência: ${error.message}`;
+                    }
                     errorAlert.style.display = 'flex';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } finally {
