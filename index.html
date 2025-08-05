@@ -1315,8 +1315,8 @@
             const classStudentsCount = document.getElementById('classStudentsCount');
             const selectedClassPeriod = document.getElementById('selectedClassPeriod');
 
-            // URL base do Apps Script
-            const SCRIPT_BASE_URL = "https://script.google.com/macros/s/AKfycbxc_P27Wl96tqKT9IDte8jvhX-v3zOxFvsDD-QgTAgcyZoV4gqKhRWTojhcE-Y2gzoj/exec";
+            // URL base do Apps Script corrigida
+            const SCRIPT_BASE_URL = "https://script.google.com/macros/s/AKfycbzKv7h9y9Ie9bQ8lQlF1XbMxG2K2QqyL8ZQ0TgZ4QjHj5v9yGJc/exec";
             const SPREADSHEET_ID = "1u7qMsMHkZT47OZdar5qvshQDRA8XJrLgDjAZVOViAio";
 
             // Armazenar gráficos
@@ -1614,7 +1614,8 @@
                         class: classInfo,
                         irregularities: irregularities.join(', '),
                         description: description,
-                        spreadsheetId: SPREADSHEET_ID
+                        spreadsheetId: SPREADSHEET_ID,
+                        sheetName: "OCORRENCIASDOSPROFESSORES" // Nova aba especificada
                     };
 
                     // Enviar dados para o Google Sheets
@@ -1734,7 +1735,7 @@
             async function loadStudentPeriodStats() {
                 showLoading();
                 try {
-                    const url = `${SCRIPT_BASE_URL}?action=getStudentPeriodStats&spreadsheetId=${SPREADSHEET_ID}`;
+                    const url = `${SCRIPT_BASE_URL}?action=getStudentPeriodStats&spreadsheetId=${SPREADSHEET_ID}&sheetName=BANCODEDADOSGERAL`;
                     const data = await safeFetch(url);
                     
                     if (data && data.status === "success") {
@@ -1745,10 +1746,11 @@
                         
                         // Atualizar gráfico de distribuição por período
                         updateStudentsPeriodChart(data);
+                    } else {
+                        throw new Error(data?.message || "Erro ao carregar estatísticas de alunos");
                     }
                 } catch (error) {
                     console.error('Erro ao carregar estatísticas de alunos:', error);
-                    
                     // Usar dados simulados para demonstração
                     const demoData = {
                         totalStudents: 1050,
