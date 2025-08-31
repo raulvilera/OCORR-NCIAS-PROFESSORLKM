@@ -1930,7 +1930,7 @@
                 registrosTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Carregando registros...</td></tr>';
                 
                 try {
-                    const url = `${"https://script.google.com/macros/s/AKfycbyWBpCKe2fKjbITf0pFplRq-n8jnqSZfaYtf-by1q0S3CA0hNGBDg2bkR24vQa2tp7x/exec"}?action=getAllOccurrences`;
+                    const url = `${"https://script.google.com/macros/s/AKfycbxfP5qinpFb9vbzZ8R-FCScODvl7PSk-PmZ4EEm5JJ10Nsp7z5cjcuF1LKA9B2p2Alc/exec"}?action=getAllOccurrences`;
                     const data = await safeFetch(url);
                     
                     if (data && data.status === "success" && Array.isArray(data.occurrences)) {
@@ -2131,7 +2131,7 @@
             // Carregar estatísticas de alunos por período - VERSÃO CORRIGIDA
             async function loadStudentPeriodStats() {
                 try {
-                    const url = `${"https://script.google.com/macros/s/AKfycbyWBpCKe2fKjbITf0pFplRq-n8jnqSZfaYtf-by1q0S3CA0hNGBDg2bkR24vQa2tp7x/exec"}?action=getStudentPeriodStats`;
+                    const url = `${"https://script.google.com/macros/s/AKfycbxfP5qinpFb9vbzZ8R-FCScODvl7PSk-PmZ4EEm5JJ10Nsp7z5cjcuF1LKA9B2p2Alc/exec"}?action=getStudentPeriodStats`;
                     const data = await safeFetch(url);
                     
                     if (data && data.status === "success") {
@@ -2167,7 +2167,7 @@
             // Função para exportar dados para Excel - VERSÃO CORRIGIDA
             exportBtn.addEventListener('click', async function() {
                 try {
-                    const url = `${"https://script.google.com/macros/s/AKfycbyWBpCKe2fKjbITf0pFplRq-n8jnqSZfaYtf-by1q0S3CA0hNGBDg2bkR24vQa2tp7x/exec"}?action=getAllOccurrences`;
+                    const url = `${"https://script.google.com/macros/s/AKfycbxfP5qinpFb9vbzZ8R-FCScODvl7PSk-PmZ4EEm5JJ10Nsp7z5cjcuF1LKA9B2p2Alc/exec"}?action=getAllOccurrences`;
                     const data = await safeFetch(url);
                     
                     if (data && data.status === "success" && Array.isArray(data.occurrences)) {
@@ -2229,7 +2229,7 @@
             // Função para editar ocorrência - VERSÃO CORRIGIDA
             async function editOccurrence(occurrenceId) {
                 try {
-                    const url = `${"https://script.google.com/macros/s/AKfycbyWBpCKe2fKjbITf0pFplRq-n8jnqSZfaYtf-by1q0S3CA0hNGBDg2bkR24vQa2tp7x/exec"}?action=getOccurrenceById&id=${occurrenceId}`;
+                    const url = `${"https://script.google.com/macros/s/AKfycbxfP5qinpFb9vbzZ8R-FCScODvl7PSk-PmZ4EEm5JJ10Nsp7z5cjcuF1LKA9B2p2Alc/exec"}?action=getOccurrenceById&id=${occurrenceId}`;
                     const response = await safeFetch(url);
                     
                     if (response && response.status === "success" && response.occurrence) {
@@ -2281,12 +2281,12 @@
             // Função para excluir ocorrência - VERSÃO CORRIGIDA
             async function deleteOccurrence(occurrenceId) {
                 try {
-                    const url = SCRIPT_URL;
+                    const url = "https://script.google.com/macros/s/AKfycbxfP5qinpFb9vbzZ8R-FCScODvl7PSk-PmZ4EEm5JJ10Nsp7z5cjcuF1LKA9B2p2Alc/exec";
                     const payload = {
                         action: 'deleteOccurrence',
                         id: occurrenceId
                     };
-                    const data = await safeFetch(url, {
+                    const data = await safeFetch("https://script.google.com/macros/s/AKfycbxfP5qinpFb9vbzZ8R-FCScODvl7PSk-PmZ4EEm5JJ10Nsp7z5cjcuF1LKA9B2p2Alc/exec", {
                         method: 'POST',
                         body: JSON.stringify(payload)
                     });
@@ -2333,91 +2333,3 @@
     </script>
 </body>
 </html>
-
-
-            // Função para enviar dados do formulário (Adicionar/Atualizar Ocorrência) - VERSÃO CORRIGIDA
-            async function sendFormData(formData) {
-                const action = currentEditId ? 'updateOccurrence' : 'addOccurrence';
-                const payload = { ...formData, action: action };
-                if (currentEditId) {
-                    payload.id = currentEditId;
-                }
-
-                try {
-                    const response = await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(`HTTP error! Status: ${response.status}, Mensagem: ${errorText.substring(0, 200)}`);
-                    }
-
-                    const data = await response.json();
-                    if (data && data.status === "success") {
-                        return data;
-                    } else {
-                        const errorMsg = data?.message || "Erro ao processar ocorrência";
-                        throw new Error(errorMsg);
-                    }
-                } catch (error) {
-                    console.error('Erro em sendFormData:', error);
-                    throw error;
-                }
-            }
-
-
-
-
-            // Função para carregar e exibir os registros na tabela - VERSÃO CORRIGIDA
-            async function loadRegistrosTable() {
-                registrosTableBody.innerHTML = `<tr><td colspan="7" class="no-records">Carregando registros...</td></tr>`;
-                try {
-                    const url = `${SCRIPT_URL}?action=getAllOccurrences`;
-                    const data = await safeFetch(url);
-
-                    if (data && data.status === "success" && Array.isArray(data.occurrences)) {
-                        if (data.occurrences.length === 0) {
-                            registrosTableBody.innerHTML = `<tr><td colspan="7" class="no-records">Nenhum registro encontrado.</td></tr>`;
-                            return;
-                        }
-
-                        registrosTableBody.innerHTML = ""; // Limpar antes de adicionar
-                        data.occurrences.forEach(occurrence => {
-                            const row = document.createElement("tr");
-                            row.innerHTML = `
-                                <td>${occurrence.date}</td>
-                                <td>${occurrence.professor}</td>
-                                <td>${occurrence.class}</td>
-                                <td>${occurrence.student}</td>
-                                <td>${occurrence.irregularities}</td>
-                                <td>${occurrence.description || 
-                                    `<span style="color: var(--light-text); font-style: italic;">Nenhuma observação</span>`
-                                }</td>
-                                <td class="actions-cell">
-                                    <button class="btn-action btn-edit" data-id="${occurrence.id}">
-                                        <i class="fas fa-edit"></i> Editar
-                                    </button>
-                                    <button class="btn-action btn-delete" data-id="${occurrence.id}">
-                                        <i class="fas fa-trash"></i> Excluir
-                                    </button>
-                                </td>
-                            `;
-                            registrosTableBody.appendChild(row);
-                        });
-                    } else {
-                        const errorMsg = data?.message || "Erro ao carregar registros";
-                        registrosTableBody.innerHTML = `<tr><td colspan="7" class="no-records" style="color: var(--error-color);">Erro ao carregar registros: ${errorMsg}</td></tr>`;
-                        showNotification("error", `Erro ao carregar registros: ${errorMsg}`);
-                    }
-                } catch (error) {
-                    console.error("Erro ao carregar registros:", error);
-                    registrosTableBody.innerHTML = `<tr><td colspan="7" class="no-records" style="color: var(--error-color);">Erro ao carregar registros: ${error.message || "Erro desconhecido"}</td></tr>`;
-                    showNotification("error", `Erro ao carregar registros: ${error.message || "Erro desconhecido"}`);
-                }
-            }
-
