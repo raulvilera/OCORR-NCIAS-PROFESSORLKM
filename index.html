@@ -1712,7 +1712,7 @@
                     refreshIcon.classList.add('registros-window-refresh');
                 }
                 try {
-                    const url = `${SCRIPT_URL}?action=getAllData`;
+                    const url = `${"https://script.google.com/macros/s/AKfycbx22XlBS7HB0SVpUyArvXBVBf81jDkHaSQDM8yTOIUVhM185hFSClQrxM4DkGhOUWaM/exec"}?action=getAllData`;
                     const data = await safeFetch(url);
                     if (data && data.status === 'success') {
                         allOccurrences = data.occurrences || [];
@@ -1745,7 +1745,7 @@
                 if (selectedClass) {
                     try {
                         // CORREÇÃO: Usar 'className' em vez de 'sheetName'
-                        const url = `${SCRIPT_URL}?action=getStudentsByClass&className=${encodeURIComponent(selectedClass)}`;
+                        const url = `${"https://script.google.com/macros/s/AKfycbx22XlBS7HB0SVpUyArvXBVBf81jDkHaSQDM8yTOIUVhM185hFSClQrxM4DkGhOUWaM/exec"}?action=getStudentsByClass&className=${encodeURIComponent(selectedClass)}`;
                         const data = await safeFetch(url);
                         
                         studentSelect.innerHTML = '<option value="">Selecione um aluno</option>';
