@@ -1058,27 +1058,27 @@
         }
 
         async function getStudentsByClass(className) {
-            const url = `${CONFIG."https://script.google.com/macros/s/AKfycbxfP5qinpFb9vbzZ8R-FCScODvl7PSk-PmZ4EEm5JJ10Nsp7z5cjcuF1LKA9B2p2Alc/exec"}?action=getStudentsByClass&class=${encodeURIComponent(className)}&spreadsheetId=${CONFIG.SPREADSHEET_ID}`;
+            const url = `${CONFIG."SCRIPT_URL"}?action=getStudentsByClass&class=${encodeURIComponent(className)}&spreadsheetId=${CONFIG.SPREADSHEET_ID}`;
             return await makeRequest(url);
         }
 
         async function getStudentOccurrences(studentName) {
-            const url = `${CONFIG"https://script.google.com/macros/s/AKfycbxfP5qinpFb9vbzZ8R-FCScODvl7PSk-PmZ4EEm5JJ10Nsp7z5cjcuF1LKA9B2p2Alc/exec"}?action=getStudentOccurrences&student=${encodeURIComponent(studentName)}&spreadsheetId=${CONFIG.SPREADSHEET_ID}`;
+            const url = `${CONFIG"SCRIPT_URL"}?action=getStudentOccurrences&student=${encodeURIComponent(studentName)}&spreadsheetId=${CONFIG.SPREADSHEET_ID}`;
             return await makeRequest(url);
         }
 
         async function getIrregularityStats() {
-            const url = `${CONFIG."https://script.google.com/macros/s/AKfycbxfP5qinpFb9vbzZ8R-FCScODvl7PSk-PmZ4EEm5JJ10Nsp7z5cjcuF1LKA9B2p2Alc/exec"}?action=getIrregularityStats&spreadsheetId=${CONFIG.SPREADSHEET_ID}`;
+            const url = `${CONFIG."SCRIPT_URL"}?action=getIrregularityStats&spreadsheetId=${CONFIG.SPREADSHEET_ID}`;
             return await makeRequest(url);
         }
 
         async function getStatistics() {
-            const url = `${CONFIG."https://script.google.com/macros/s/AKfycbxfP5qinpFb9vbzZ8R-FCScODvl7PSk-PmZ4EEm5JJ10Nsp7z5cjcuF1LKA9B2p2Alc/exec"}?action=getStatistics&spreadsheetId=${CONFIG.SPREADSHEET_ID}`;
+            const url = `${CONFIG."SCRIPT_URL"}?action=getStatistics&spreadsheetId=${CONFIG.SPREADSHEET_ID}`;
             return await makeRequest(url);
         }
 
         async function addOccurrence(occurrenceData) {
-            return await makeRequest(CONFIG."https://script.google.com/macros/s/AKfycbxfP5qinpFb9vbzZ8R-FCScODvl7PSk-PmZ4EEm5JJ10Nsp7z5cjcuF1LKA9B2p2Alc/exec", {
+            return await makeRequest(CONFIG."SCRIPT_URL", {
                 method: 'POST',
                 body: JSON.stringify({
                     action: 'addOccurrence',
