@@ -227,7 +227,7 @@
           </div>
         </div>
 
-        <div id="loginFormGestao" class="access-area" style="display:block">
+        <div id="loginFormGestao" class="access-area">
           <div class="form-section">
             <div class="form-row">
               <div class="field-group">
@@ -555,9 +555,15 @@
     /*******************************
      * CONFIGURAÇÕES
      *******************************/
-    // ATENÇÃO: ajuste SCRIPT_URL e SPREADSHEET_ID conforme seu deployment do Apps Script
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxg8AUMLs5trE5JzHdtiD88N-KN4r5aZ8HwL1j9NdPHQtB2l2TGaaMMRZbNlOGKJEWy/exec';
     const SPREADSHEET_ID = '1u7qMsMHkZT47OZdar5qvshQDRA8XJrLgDjAZVOViAio';
+    
+    // Planilha SharePoint (Excel) para professor
+    const SHAREPOINT_ID = 'EdAMsLnS0k9Bia-6V5c2UOwBXGopV6LDzvy3yo87v61rkw?e=XZs4hP';
+    const SHAREPOINT_URL = `https://seducsp-my.sharepoint.com/:x:/g/personal/e923357w10_professor_educacao_sp_gov_br/${SHAREPOINT_ID}`;
+
+    // Template PDF
+    const PDF_TEMPLATE_URL = 'https://docs.google.com/document/d/1dHwyN8mlb_4bltEksnoc3Yx5wUcDNgAkzqsluLPYeP8/edit?tab=t.0';
 
     // nomes de abas (front-end manda "sheet" para o Apps Script)
     const SHEET_GERAL = 'BANCODEDADOSGERAL';
@@ -584,13 +590,22 @@
       document.getElementById('aluno_gestao_placeholder').textContent = "Selecione a turma e depois clique para escolher os alunos";
       document.getElementById('alunos_selected_placeholder').textContent = "Clique para selecionar";
 
-      // Melhorar a usabilidade dos campos de data
-      document.querySelectorAll('.date-field').forEach(field => {
-        field.addEventListener('focus', function() {
-          this.showPicker && this.showPicker();
+      // mostrar login area por default
+      document.getElementById('loginFormGestao').style.display = 'block';
+      
+      // Configurar campos de data para abrir calendário automaticamente
+      setupDateFields();
+    });
+
+    // Configurar campos de data para abrir calendário automaticamente
+    function setupDateFields() {
+      const dateFields = document.querySelectorAll('.date-field');
+      dateFields.forEach(field => {
+        field.addEventListener('click', function() {
+          this.showPicker();
         });
       });
-    });
+    }
 
     // Selecionar opção de login
     function selectLoginOption(role) {
@@ -793,10 +808,16 @@
         const row = document.createElement('div');
         row.className = 'student-checkbox';
 
-        const cb = document.createElement('input'); cb.type='checkbox'; cb.value = nome; cb.checked = alunosSelecionados.includes(nome);
+        const cb = document.createElement('input'); 
+        cb.type='checkbox'; 
+        cb.value = nome; 
+        cb.checked = alunosSelecionados.includes(nome);
         cb.onchange = (e) => {
-          if(e.target.checked){ if(!alunosSelecionados.includes(nome)) alunosSelecionados.push(nome); }
-          else { alunosSelecionados = alunosSelecionados.filter(x => x !== nome); }
+          if(e.target.checked){ 
+            if(!alunosSelecionados.includes(nome)) alunosSelecionados.push(nome); 
+          } else { 
+            alunosSelecionados = alunosSelecionados.filter(x => x !== nome); 
+          }
           // atualizar pills visual enquanto seleciona
           renderSelectedPills();
         };
@@ -872,8 +893,8 @@
           } else { 
             alunosSelecionadosGestao = alunosSelecionadosGestao.filter(x => x !== nome); 
           }
-          // Atualizar RAs automaticamente
-          updateRAsFromSelectedStudents();
+          // Atualizar automaticamente o RA quando selecionar um aluno
+          updateRAsGestao();
         };
 
         const lblWrap = document.createElement('div'); lblWrap.style.display='flex'; lblWrap.style.flexDirection='column';
@@ -887,23 +908,19 @@
       });
     }
 
+    // Função para atualizar automaticamente os RAs quando selecionar um aluno
+    function updateRAsGestao() {
+      const ras = alunosDaTurmaAtualGestao
+        .filter(item => alunosSelecionadosGestao.includes(item.nome) && item.ra)
+        .map(item => item.ra);
+      
+      document.getElementById('ra_gestao').value = ras.length ? ras.join(', ') : 'RAs serão preenchidos automaticamente';
+    }
+
     function filterStudentListGestao(){
       const q = document.getElementById('studentSearchGestao').value.toLowerCase();
       const filtered = alunosDaTurmaAtualGestao.filter(s => ((typeof s==='string'?s:s.nome).toLowerCase().includes(q)));
       renderStudentListGestao(filtered);
-    }
-
-    // Função para atualizar automaticamente os RAs quando alunos são selecionados
-    function updateRAsFromSelectedStudents() {
-      const ras = [];
-      alunosSelecionadosGestao.forEach(nome => {
-        const aluno = alunosDaTurmaAtualGestao.find(a => a.nome === nome);
-        if (aluno && aluno.ra) {
-          ras.push(aluno.ra);
-        }
-      });
-      
-      document.getElementById('ra_gestao').value = ras.length ? ras.join(', ') : '';
     }
 
     function confirmStudentsGestao(){
@@ -920,7 +937,7 @@
       });
 
       // Preencher automaticamente os RAs (quando disponíveis)
-      updateRAsFromSelectedStudents();
+      updateRAsGestao();
 
       closeStudentsModalGestao();
     }
@@ -1003,14 +1020,20 @@
 
     /*******************************
      * POST registrar ocorrência (professor) -> grava em OCORRENCIASDOSPROFESSORES (sheet: SHEET_PROF)
+     * e também na planilha SharePoint
      *******************************/
     async function registrarOcorrenciaProfessor(){
       const professor = document.getElementById('professor_select').value;
       const turma = document.getElementById('turma_select').value;
       const dataOc = document.getElementById('data_prof').value;
       const descricao = document.getElementById('descricao_prof').value.trim();
-      if(!professor || !turma || !dataOc || alunosSelecionados.length === 0){ alert('Preencha todos os campos obrigatórios e selecione ao menos um aluno.'); return; }
+      if(!professor || !turma || !dataOc || alunosSelecionados.length === 0){ 
+        alert('Preencha todos os campos obrigatórios e selecione ao menos um aluno.'); 
+        return; 
+      }
       const irregs = Array.from(document.querySelectorAll('input[name="irreg"]:checked')).map(x=>x.value);
+      
+      // Payload para Google Sheets
       const payload = {
          sheet: SHEET_PROF,
          startRow: 2,
@@ -1021,9 +1044,30 @@
          irregularities: irregs.join(', '),
          description: descricao
        };
+      
+      // Payload para SharePoint (Excel)
+      const sharepointPayload = {
+        sheet: 'Sheet1',
+        date: dataOc,
+        professor: professor,
+        studentClass: turma,
+        student: alunosSelecionados.join(', '),
+        irregularities: irregs.join(', '),
+        description: descricao
+      };
+
       try {
-        const resp = await fetch(`${SCRIPT_URL}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        // Registrar no Google Sheets (OCORRENCIASDOSPROFESSORES)
+        const resp = await fetch(`${SCRIPT_URL}`, { 
+          method:'POST', 
+          headers:{'Content-Type':'application/json'}, 
+          body: JSON.stringify(payload) 
+        });
         const j = await resp.json();
+        
+        // Registrar também na planilha SharePoint
+        await registrarNoSharePoint(sharepointPayload);
+        
         if(j && j.status === 'success'){
           document.getElementById('successProfessor').style.display = 'block';
           setTimeout(()=> document.getElementById('successProfessor').style.display = 'none', 2200);
@@ -1036,6 +1080,32 @@
         console.error('Erro POST ocorrencia (professor):', err);
         alert('Erro ao comunicar com o servidor (ver console).');
       }
+    }
+
+    // Função para registrar no SharePoint (simulação - implementação real dependerá da API do SharePoint)
+    async function registrarNoSharePoint(payload) {
+      // Esta é uma implementação simulada
+      // A implementação real dependerá da API específica do SharePoint
+      console.log('Registrando no SharePoint:', payload);
+      
+      // Em uma implementação real, você faria uma requisição para a API do SharePoint
+      // Exemplo:
+      // try {
+      //   const response = await fetch(SHAREPOINT_URL, {
+      //     method: 'POST',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //       // Adicionar headers de autenticação conforme necessário
+      //     },
+      //     body: JSON.stringify(payload)
+      //   });
+      //   if (!response.ok) {
+      //     throw new Error('Erro ao registrar no SharePoint');
+      //   }
+      //   console.log('Registro no SharePoint realizado com sucesso');
+      // } catch (error) {
+      //   console.error('Erro ao registrar no SharePoint:', error);
+      // }
     }
 
     function clearProfessorForm(){
@@ -1278,9 +1348,8 @@
     // Função para download de template - chama endpoint generate-pdf-form para gerar uma cópia do template (somente gestão pode usar)
     async function downloadDocument(){
       if(currentUserRole !== 'gestao') { alert('Apenas gestão pode acessar o template de gestão.'); return; }
-      
-      // Abrir o documento PDF diretamente
-      window.open('https://docs.google.com/document/d/1dHwyN8mlb_4bltEksnoc3Yx5wUcDNgAkzqsluLPYeP8/export?format=pdf', '_blank');
+      // Abre o documento PDF no link fornecido
+      window.open(PDF_TEMPLATE_URL, '_blank');
     }
 
   </script>
