@@ -124,7 +124,6 @@
        color: #fff; border-color: #fff; box-shadow: 0 5px 12px rgba(0,0,0,0.2);
     }
     .login-option:hover {background: rgba(255,255,255,0.3); box-shadow: 0 4px 10px rgba(0,0,0,0.15);}    
-    .access-area {display: none;}
 
     /* Checkbox Styles */
     .checkbox-group {display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0;}
@@ -165,6 +164,7 @@
     .student-checkbox {
       display: flex; align-items: center; padding: 14px; border-bottom: 1px solid #eee; 
        cursor: pointer; transition: background 0.2s; border-radius: 6px;
+      position: relative;
     }
     .student-checkbox:hover {background: #f0f4ff; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}    
     .student-checkbox input[type="checkbox"] {margin-right: 14px; transform: scale(1.3);}    
@@ -198,6 +198,26 @@
       display:none;margin-top:12px;background:linear-gradient(90deg,#4CAF50,#2E7D32);
       padding:14px;border-radius:8px;color:#fff;font-weight:600; box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
+
+    /* Botão fixo para confirmação */
+    .confirm-button-container {
+      position: sticky;
+      bottom: 0;
+      background: white;
+      padding: 15px 0;
+      border-top: 1px solid #eee;
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* Estilo para o label do aluno que é clicável */
+    .student-label {
+      flex: 1;
+      cursor: pointer;
+      padding: 8px 0;
+    }
   </style>
 </head>
 <body>
@@ -216,14 +236,14 @@
     <!-- LOGIN -->
     <div id="loginScreen" class="card" style="display:block">
       <div style="max-width:500px;margin:0 auto">
-        <div class="subtitle">Selecione o tipo de acesso</div>
+        <div class="subtitle">Acesso ao Sistema</div>
 
         <div class="login-options">
           <div class="login-option active" id="optionGestao" onclick="selectLoginOption('gestao')">
-            Acesso Gestão
+            Gestão
           </div>
           <div class="login-option" id="optionProfessor" onclick="selectLoginOption('professor')">
-            Acesso Professor
+            Professor
           </div>
         </div>
 
@@ -231,38 +251,38 @@
           <div class="form-section">
             <div class="form-row">
               <div class="field-group">
-                <label for="emailGestao">E-mail Gestão</label>
-                <input id="emailGestao" type="email" placeholder="gestao@escola.com">
+                <label for="emailGestao">E-mail</label>
+                <input id="emailGestao" type="email">
               </div>
               <div class="field-group">
                 <label for="passwordGestao">Senha</label>
-                <input id="passwordGestao" type="password" placeholder="senha">
+                <input id="passwordGestao" type="password">
               </div>
             </div>
           </div>
 
           <div class="flex-row">
-            <button class="btn-primary" onclick="login('gestao')">Entrar como Gestão</button>
-            <button class="btn-danger" onclick="fillDemo('gestao')">Demo Gestão</button>
+            <button class="btn-primary" onclick="login('gestao')">Entrar</button>
+            <button class="btn-danger" onclick="fillDemo('gestao')">Demo</button>
           </div>
         </div>
 
-        <div id="loginFormProfessor" class="access-area">
+        <div id="loginFormProfessor" class="access-area" style="display:none">
           <div class="form-section">
             <div class="form-row">
               <div class="field-group">
-                <label for="emailProfessor">E-mail Professor</label>
-                <input id="emailProfessor" type="email" placeholder="professor@escola.com">
+                <label for="emailProfessor">E-mail</label>
+                <input id="emailProfessor" type="email">
               </div>
               <div class="field-group">
                 <label for="passwordProfessor">Senha</label>
-                <input id="passwordProfessor" type="password" placeholder="senha">
+                <input id="passwordProfessor" type="password">
               </div>
             </div>
           </div>
 
           <div class="flex-row">
-            <button class="btn-primary" onclick="login('professor')">Entrar como Professor</button>
+            <button class="btn-primary" onclick="login('professor')">Entrar</button>
           </div>
         </div>
       </div>
@@ -522,7 +542,7 @@
           <div id="studentList" class="studentList"></div>
         </div>
 
-        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
+        <div class="confirm-button-container">
           <button class="btn-primary" onclick="confirmStudents()">Confirmar</button>
           <button class="btn-danger" onclick="closeStudentsModal()">Cancelar</button>
         </div>
@@ -542,7 +562,7 @@
           <div id="studentListGestao" class="studentList"></div>
         </div>
 
-        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
+        <div class="confirm-button-container">
           <button class="btn-primary" onclick="confirmStudentsGestao()">Confirmar</button>
           <button class="btn-danger" onclick="closeStudentsModalGestao()">Cancelar</button>
         </div>
@@ -592,6 +612,7 @@
 
       // mostrar login area por default
       document.getElementById('loginFormGestao').style.display = 'block';
+      document.getElementById('loginFormProfessor').style.display = 'none';
       
       // Configurar campos de data para abrir calendário automaticamente
       setupDateFields();
@@ -812,8 +833,13 @@
         cb.type='checkbox'; 
         cb.value = nome; 
         cb.checked = alunosSelecionados.includes(nome);
-        cb.onchange = (e) => {
-          if(e.target.checked){ 
+        cb.id = `student-${nome.replace(/\s+/g, '-')}`;
+
+        const lblWrap = document.createElement('div'); 
+        lblWrap.className = 'student-label';
+        lblWrap.onclick = () => {
+          cb.checked = !cb.checked;
+          if(cb.checked){ 
             if(!alunosSelecionados.includes(nome)) alunosSelecionados.push(nome); 
           } else { 
             alunosSelecionados = alunosSelecionados.filter(x => x !== nome); 
@@ -821,8 +847,7 @@
           // atualizar pills visual enquanto seleciona
           renderSelectedPills();
         };
-
-        const lblWrap = document.createElement('div'); lblWrap.style.display='flex'; lblWrap.style.flexDirection='column';
+        
         const lbl = document.createElement('div'); lbl.textContent = nome;
         const sub = document.createElement('div'); sub.className='muted'; sub.style.fontSize='12px'; sub.textContent = ra ? ('RA: '+ra) : '';
 
@@ -887,8 +912,13 @@
         cb.type='checkbox';
         cb.value = nome;
         cb.checked = alunosSelecionadosGestao.includes(nome);
-        cb.onchange = (e) => { 
-          if(e.target.checked){ 
+        cb.id = `student-gestao-${nome.replace(/\s+/g, '-')}`;
+
+        const lblWrap = document.createElement('div'); 
+        lblWrap.className = 'student-label';
+        lblWrap.onclick = () => { 
+          cb.checked = !cb.checked;
+          if(cb.checked){ 
             if(!alunosSelecionadosGestao.includes(nome)) alunosSelecionadosGestao.push(nome); 
           } else { 
             alunosSelecionadosGestao = alunosSelecionadosGestao.filter(x => x !== nome); 
@@ -897,7 +927,6 @@
           updateRAsGestao();
         };
 
-        const lblWrap = document.createElement('div'); lblWrap.style.display='flex'; lblWrap.style.flexDirection='column';
         const lbl = document.createElement('div'); lbl.textContent = nome;
         const sub = document.createElement('div'); sub.className='muted'; sub.style.fontSize='12px'; sub.textContent = ra ? ('RA: '+ra) : '';
         lblWrap.appendChild(lbl); if(ra) lblWrap.appendChild(sub);
