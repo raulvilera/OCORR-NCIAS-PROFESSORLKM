@@ -576,19 +576,14 @@
      * CONFIGURAÇÕES
      *******************************/
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwSt4EFZuhNA6ohH1FKAWDesYetxDfXu8_yrxrM9fIp9LXDYnthC_PHnU7u3BBYArvV/exec';
-    const SPREADSHEET_ID = '1u7qMsMHkZT47OZdar5qvshQDRA8XJrLgDjAZVOViAio';
     
-    // Planilha SharePoint (Excel) para professor
-    const SHAREPOINT_ID = 'EdAMsLnS0k9Bia-6V5c2UOwBXGopV6LDzvy3yo87v61rkw?e=XZs4hP';
-    const SHAREPOINT_URL = `https://seducsp-my.sharepoint.com/:x:/g/personal/e923357w10_professor_educacao_sp_gov_br/${SHAREPOINT_ID}`;
+    // Nomes de abas conforme backend
+    const SHEET_OCORRENCIAS = 'ocorrenciasdosprofessores'; // Para professor
+    const SHEET_BANCO_ALUNOS = 'BANCODEALUNOS'; // Para gestão
+    const SHEET_GERAL = 'BANCODEDADOSGERAL'; // Dados gerais
 
     // Template PDF
     const PDF_TEMPLATE_URL = 'https://docs.google.com/document/d/1dHwyN8mlb_4bltEksnoc3Yx5wUcDNgAkzqsluLPYeP8/edit?tab=t.0';
-
-    // nomes de abas (front-end manda "sheet" para o Apps Script)
-    const SHEET_GERAL = 'BANCODEDADOSGERAL';
-    const SHEET_PROF = 'OCORRENCIASDOSPROFESSORES';
-    const SHEET_GESTAO = 'BANCODEALUNOS';
 
     // estado
     let allAlunos = [];
@@ -982,7 +977,7 @@
     }
 
     /*******************************
-     * POST cadastrar ocorrência (gestão) -> grava em BANCODEALUNOS (sheet: SHEET_GESTAO)
+     * POST cadastrar ocorrência (gestão) -> grava em BANCODEALUNOS
      *******************************/
     async function cadastrarOcorrenciaGestao(){
       const turma = document.getElementById('serie_gestao').value.trim();
@@ -1003,9 +998,10 @@
         return;
       }
 
+      // CORREÇÃO: Usar endpoint correto e payload compatível com backend
       const payload = {
-        sheet: SHEET_GESTAO,
-        startRow: 2,
+        endpoint: 'create-occurrence',
+        sheet: SHEET_BANCO_ALUNOS, // Usar aba correta para gestão
         date: new Date().toISOString().split('T')[0],
         professor: professor,
         studentClass: turma,
@@ -1048,8 +1044,7 @@
     }
 
     /*******************************
-     * POST registrar ocorrência (professor) -> grava em OCORRENCIASDOSPROFESSORES (sheet: SHEET_PROF)
-     * e também na planilha SharePoint
+     * POST registrar ocorrência (professor) -> grava em OCORRENCIASDOSPROFESSORES
      *******************************/
     async function registrarOcorrenciaProfessor(){
       const professor = document.getElementById('professor_select').value;
@@ -1062,10 +1057,10 @@
       }
       const irregs = Array.from(document.querySelectorAll('input[name="irreg"]:checked')).map(x=>x.value);
       
-      // Payload para Google Sheets
+      // CORREÇÃO: Usar endpoint correto e payload compatível com backend
       const payload = {
-         sheet: SHEET_PROF,
-         startRow: 2,
+         endpoint: 'create-occurrence',
+         sheet: SHEET_OCORRENCIAS, // Usar aba correta para professor
          date: dataOc,
          professor: professor,
          studentClass: turma,
@@ -1073,17 +1068,6 @@
          irregularities: irregs.join(', '),
          description: descricao
        };
-      
-      // Payload para SharePoint (Excel)
-      const sharepointPayload = {
-        sheet: 'Sheet1',
-        date: dataOc,
-        professor: professor,
-        studentClass: turma,
-        student: alunosSelecionados.join(', '),
-        irregularities: irregs.join(', '),
-        description: descricao
-      };
 
       try {
         // Registrar no Google Sheets (OCORRENCIASDOSPROFESSORES)
@@ -1093,9 +1077,6 @@
           body: JSON.stringify(payload) 
         });
         const j = await resp.json();
-        
-        // Registrar também na planilha SharePoint
-        await registrarNoSharePoint(sharepointPayload);
         
         if(j && j.status === 'success'){
           document.getElementById('successProfessor').style.display = 'block';
@@ -1111,32 +1092,6 @@
       }
     }
 
-    // Função para registrar no SharePoint (simulação - implementação real dependerá da API do SharePoint)
-    async function registrarNoSharePoint(payload) {
-      // Esta é uma implementação simulada
-      // A implementação real dependerá da API específica do SharePoint
-      console.log('Registrando no SharePoint:', payload);
-      
-      // Em uma implementação real, você faria uma requisição para a API do SharePoint
-      // Exemplo:
-      // try {
-      //   const response = await fetch(SHAREPOINT_URL, {
-      //     method: 'POST',
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //       // Adicionar headers de autenticação conforme necessário
-      //     },
-      //     body: JSON.stringify(payload)
-      //   });
-      //   if (!response.ok) {
-      //     throw new Error('Erro ao registrar no SharePoint');
-      //   }
-      //   console.log('Registro no SharePoint realizado com sucesso');
-      // } catch (error) {
-      //   console.error('Erro ao registrar no SharePoint:', error);
-      // }
-    }
-
     function clearProfessorForm(){
       document.getElementById('professor_select').value='';
       document.getElementById('turma_select').value='';
@@ -1149,13 +1104,14 @@
     }
 
     /*******************************
-     * GET histórico (consultando BANCODEDADOSGERAL)
+     * GET histórico (consultando abas corretas)
      *******************************/
     async function carregarHistoricoGestao(){
       const container = document.getElementById('historyListGestao');
       container.innerHTML = `<div style="display:flex;align-items:center;gap:8px"><div class="loader"></div><div class="muted">Carregando histórico...</div></div>`;
       try {
-        const resp = await fetch(`${SCRIPT_URL}?endpoint=occurrences&sheet=${encodeURIComponent(SHEET_GESTAO)}`);
+        // CORREÇÃO: Usar aba correta para gestão
+        const resp = await fetch(`${SCRIPT_URL}?endpoint=occurrences&sheet=${encodeURIComponent(SHEET_BANCO_ALUNOS)}`);
         const json = await resp.json();
         const ocorrs = json.occurrences || json.data || [];
         container.innerHTML = '';
@@ -1215,7 +1171,8 @@
       const container = document.getElementById('historyListProfessor');
       container.innerHTML = `<div style="display:flex;align-items:center;gap:8px"><div class="loader"></div><div class="muted">Carregando histórico...</div></div>`;
       try {
-        const resp = await fetch(`${SCRIPT_URL}?endpoint=occurrences&sheet=${encodeURIComponent(SHEET_PROF)}`);
+        // CORREÇÃO: Usar aba correta para professor
+        const resp = await fetch(`${SCRIPT_URL}?endpoint=occurrences&sheet=${encodeURIComponent(SHEET_OCORRENCIAS)}`);
         const json = await resp.json();
         const ocorrs = json.occurrences || json.data || [];
         container.innerHTML = '';
@@ -1258,7 +1215,7 @@
         const resp = await fetch(`${SCRIPT_URL}?endpoint=delete-occurrence`, {
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ occurrenceId, sheet: SHEET_GESTAO })
+          body: JSON.stringify({ occurrenceId, sheet: SHEET_BANCO_ALUNOS })
         });
         const j = await resp.json();
         if(j && j.status === 'success'){ alert('Ocorrência excluída.'); carregarHistoricoGestao(); }
@@ -1275,7 +1232,7 @@
         const resp = await fetch(`${SCRIPT_URL}?endpoint=generate-pdf`, {
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ occurrenceId, sheet: SHEET_GESTAO })
+          body: JSON.stringify({ occurrenceId, sheet: SHEET_BANCO_ALUNOS })
         });
         const j = await resp.json();
         if(j && j.status === 'success' && j.pdfUrl){
